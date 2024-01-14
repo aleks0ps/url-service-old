@@ -12,7 +12,7 @@ go.mod:
 .PHONY: build
 build: go.mod
 	mkdir -vp $(BUILD)/$(APP)
-	# use local path, otherwise go build will lookup global dir /usr/local/go/src/cmd/ 
+	# use local path, otherwise 'go build' will lookup global dir /usr/local/go/src/cmd/ 
 	go build -o $(BUILD)/$(APP)/$(APP) $(CMD)/$(APP)
 
 .PHONY: clean
