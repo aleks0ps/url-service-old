@@ -81,8 +81,8 @@ func shortenURL(w http.ResponseWriter, r *http.Request) {
 		// ignore
 		if r.URL.RequestURI() == "/favicon.ico" {
 		} else {
-			shortenedUrl := r.URL.RequestURI()[1:]
-			origUrl, ok := urls[shortenedUrl]
+			shortKey := r.URL.RequestURI()[1:]
+			origUrl, ok := urls[shortKey]
 			if ok {
 				http.Redirect(w, r, origUrl, http.StatusTemporaryRedirect)
 			} else {
