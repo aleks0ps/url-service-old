@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/aleks0ps/url-service/internal/app/storage"
 )
 
 type ContentType int
@@ -29,9 +31,6 @@ var supportedTypes = []ContentTypes{
 		code: PlainText,
 	},
 }
-
-// key is short url that corresponds to original url
-var urls = make(map[string]string)
 
 func checkContentType(name string) ContentType {
 	for _, t := range supportedTypes {
@@ -65,7 +64,7 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 				panic(err)
 			}
 			shortKey := generateShortKey()
-			urls[shortKey] = string(origUrl)
+			storage.StoreURL(shortKey, string(origUrl))
 			shortenedUrl := fmt.Sprintf("%s/%s", ShortUrlBase, shortKey)
 			// Return url
 			w.Header().Set("Content-Type", "text/plain")
@@ -86,7 +85,7 @@ func GetOrigURL(w http.ResponseWriter, r *http.Request) {
 		if r.URL.RequestURI() == "/favicon.ico" {
 		} else {
 			shortKey := r.URL.RequestURI()[1:]
-			origUrl, ok := urls[shortKey]
+			origUrl, ok := storage.GetOrigURL(shortKey)
 			if ok {
 				http.Redirect(w, r, origUrl, http.StatusTemporaryRedirect)
 			} else {
