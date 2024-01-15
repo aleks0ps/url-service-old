@@ -41,7 +41,7 @@ func checkContentType(name string) ContentType {
 	return Unsupported
 }
 
-func generateShortKey() string {
+func GenerateShortKey() string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	const keyLength = 6
 
@@ -63,7 +63,11 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				panic(err)
 			}
-			shortKey := generateShortKey()
+			// empty body, no url supplied
+			if len(origUrl) == 0 {
+				w.WriteHeader(http.StatusBadRequest)
+			}
+			shortKey := GenerateShortKey()
 			storage.StoreURL(shortKey, string(origUrl))
 			shortenedUrl := fmt.Sprintf("%s/%s", ShortUrlBase, shortKey)
 			// Return url
@@ -87,7 +91,9 @@ func GetOrigURL(w http.ResponseWriter, r *http.Request) {
 			shortKey := r.URL.RequestURI()[1:]
 			origUrl, ok := storage.GetOrigURL(shortKey)
 			if ok {
-				http.Redirect(w, r, origUrl, http.StatusTemporaryRedirect)
+				//http.Redirect(w, r, origUrl, http.StatusTemporaryRedirect)
+				w.WriteHeader(http.StatusTemporaryRedirect)
+				w.Header().Set("Location", origUrl)
 			} else {
 				w.WriteHeader(http.StatusBadRequest)
 			}
