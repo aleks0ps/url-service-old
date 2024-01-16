@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aleks0ps/url-service/internal/app/config"
 	"github.com/aleks0ps/url-service/internal/app/storage"
 )
 
@@ -19,8 +20,6 @@ const (
 	PlainText
 	UrlEncoded
 )
-
-const ShortUrlBase = "http://localhost:8080"
 
 type ContentTypes struct {
 	name string
@@ -75,7 +74,7 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			}
 			shortKey := GenerateShortKey()
 			storage.StoreURL(shortKey, string(origUrl))
-			shortenedUrl := fmt.Sprintf("%s/%s", ShortUrlBase, shortKey)
+			shortenedUrl := fmt.Sprintf("%s/%s", config.Options.BaseURL, shortKey)
 			// Return url
 			w.Header().Set("Content-Type", "text/plain")
 			w.Header().Set("Content-Length", strconv.Itoa(len(shortenedUrl)))
@@ -91,7 +90,7 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			}
 			shortKey := GenerateShortKey()
 			storage.StoreURL(shortKey, string(origUrl))
-			shortenedUrl := fmt.Sprintf("%s/%s", ShortUrlBase, shortKey)
+			shortenedUrl := fmt.Sprintf("%s/%s", config.Options.BaseURL, shortKey)
 			// Return url
 			w.Header().Set("Content-Type", "text/plain")
 			w.Header().Set("Content-Length", strconv.Itoa(len(shortenedUrl)))
