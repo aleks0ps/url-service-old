@@ -62,29 +62,10 @@ func GenerateShortKey() string {
 func ShortenURL(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		contentType := r.Header.Get("Content-Type")
-		if checkContentType(contentType) == PlainText {
-			// we expect body contains url for encoding
-			origUrl, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				panic(err)
-			}
-			// empty body, no url supplied
-			if len(origUrl) == 0 {
-				w.WriteHeader(http.StatusBadRequest)
-			}
-			shortKey := GenerateShortKey()
-			storage.StoreURL(shortKey, string(origUrl))
-			shortenedUrl := fmt.Sprintf("%s/%s", config.Options.BaseURL, shortKey)
-			// Return url
-			w.Header().Set("Content-Type", "text/plain")
-			w.Header().Set("Content-Length", strconv.Itoa(len(shortenedUrl)))
-			// 201
-			w.WriteHeader(http.StatusCreated)
-			//
-			fmt.Fprintf(w, shortenedUrl)
-		} else if checkContentType(contentType) == UrlEncoded {
+		if checkContentType(contentType) == UrlEncoded {
 			r.ParseForm()
 			origUrl := strings.Join(r.PostForm["url"], "")
+			// XXX
 			if len(origUrl) == 0 {
 				w.WriteHeader(http.StatusBadRequest)
 			}
@@ -99,7 +80,20 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			//
 			fmt.Fprintf(w, shortenedUrl)
 		} else {
-			w.WriteHeader(http.StatusBadRequest)
+			origUrl, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				panic(err)
+			}
+			shortKey := GenerateShortKey()
+			storage.StoreURL(shortKey, string(origUrl))
+			shortenedUrl := fmt.Sprintf("%s/%s", config.Options.BaseURL, shortKey)
+			// Return url
+			w.Header().Set("Content-Type", "text/plain")
+			w.Header().Set("Content-Length", strconv.Itoa(len(shortenedUrl)))
+			// 201
+			w.WriteHeader(http.StatusCreated)
+			//
+			fmt.Fprintf(w, shortenedUrl)
 		}
 	}
 }
