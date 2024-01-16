@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aleks0ps/url-service/internal/app/storage"
@@ -16,6 +17,7 @@ type ContentType int
 const (
 	Unsupported ContentType = iota
 	PlainText
+	UrlEncoded
 )
 
 const ShortUrlBase = "http://localhost:8080"
@@ -29,6 +31,10 @@ var supportedTypes = []ContentTypes{
 	{
 		name: "text/plain",
 		code: PlainText,
+	},
+	{
+		name: "application/x-www-form-urlencoded",
+		code: UrlEncoded,
 	},
 }
 
@@ -77,6 +83,22 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusCreated)
 			//
 			fmt.Fprintf(w, shortenedUrl)
+		} else if checkContentType(contentType) == UrlEncoded {
+			r.ParseForm()
+			origUrl := strings.Join(r.PostForm["url"], "")
+			if len(origUrl) == 0 {
+				w.WriteHeader(http.StatusBadRequest)
+			}
+			shortKey := GenerateShortKey()
+			storage.StoreURL(shortKey, string(origUrl))
+			shortenedUrl := fmt.Sprintf("%s/%s", ShortUrlBase, shortKey)
+			// Return url
+			w.Header().Set("Content-Type", "text/plain")
+			w.Header().Set("Content-Length", strconv.Itoa(len(shortenedUrl)))
+			// 201
+			w.WriteHeader(http.StatusCreated)
+			//
+			fmt.Fprintf(w, shortenedUrl)
 		} else {
 			w.WriteHeader(http.StatusBadRequest)
 		}
@@ -91,9 +113,7 @@ func GetOrigURL(w http.ResponseWriter, r *http.Request) {
 			shortKey := r.URL.RequestURI()[1:]
 			origUrl, ok := storage.GetOrigURL(shortKey)
 			if ok {
-				//http.Redirect(w, r, origUrl, http.StatusTemporaryRedirect)
-				w.WriteHeader(http.StatusTemporaryRedirect)
-				w.Header().Set("Location", origUrl)
+				http.Redirect(w, r, origUrl, http.StatusTemporaryRedirect)
 			} else {
 				w.WriteHeader(http.StatusBadRequest)
 			}

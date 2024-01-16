@@ -12,8 +12,10 @@ go.mod:
 .PHONY: build
 build: go.mod
 	mkdir -vp $(BUILD)/$(APP)
+	mkdir -vp $(BUILD)/client
 	# use local path, otherwise 'go build' will lookup global dir /usr/local/go/src/cmd/ 
 	go build -o $(BUILD)/$(APP)/$(APP) $(CMD)/$(APP)
+	go build -o $(BUILD)/client/client $(CMD)/client
 
 .PHONY: clean
 clean:
