@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -80,7 +80,7 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			//
 			fmt.Fprintf(w, shortenedURL)
 		} else {
-			origURL, err := ioutil.ReadAll(r.Body)
+			origURL, err := io.ReadAll(r.Body)
 			if err != nil {
 				panic(err)
 			}
