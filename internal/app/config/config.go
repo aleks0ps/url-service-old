@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/caarlos0/env/v6"
 )
@@ -19,6 +20,7 @@ var Options = struct {
 
 func ParseOptions() {
 	if err := env.Parse(&Options); err != nil {
+		fmt.Println("failed:", err)
 	}
 	flag.StringVar(&Options.ListenAddr, "a", Options.ListenAddr, "Listen address:port")
 	flag.StringVar(&Options.BaseURL, "b", Options.BaseURL, "Base URL for shortened url")
