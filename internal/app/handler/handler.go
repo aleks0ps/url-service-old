@@ -51,7 +51,6 @@ func GenerateShortKey() string {
 	const keyLength = 6
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	//rand.Seed(time.Now().UnixNano())
 	shortKey := make([]byte, keyLength)
 	for i := range shortKey {
 		shortKey[i] = charset[r.Intn(len(charset))]
@@ -79,7 +78,7 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			// 201
 			w.WriteHeader(http.StatusCreated)
 			//
-			fmt.Fprintf(w, shortenedURL)
+			fmt.Fprint(w, shortenedURL)
 		} else {
 			origURL, err := io.ReadAll(r.Body)
 			if err != nil {
@@ -94,7 +93,7 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			// 201
 			w.WriteHeader(http.StatusCreated)
 			//
-			fmt.Fprintf(w, shortenedURL)
+			fmt.Fprint(w, shortenedURL)
 		}
 	}
 }
