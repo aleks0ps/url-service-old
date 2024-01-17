@@ -71,14 +71,14 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			}
 			shortKey := GenerateShortKey()
 			storage.StoreURL(shortKey, string(origURL))
-			shortenedUrl := fmt.Sprintf("%s/%s", config.Options.BaseURL, shortKey)
+			shortenedURL := fmt.Sprintf("%s/%s", config.Options.BaseURL, shortKey)
 			// Return url
 			w.Header().Set("Content-Type", "text/plain")
-			w.Header().Set("Content-Length", strconv.Itoa(len(shortenedUrl)))
+			w.Header().Set("Content-Length", strconv.Itoa(len(shortenedURL)))
 			// 201
 			w.WriteHeader(http.StatusCreated)
 			//
-			fmt.Fprintf(w, shortenedUrl)
+			fmt.Fprintf(w, shortenedURL)
 		} else {
 			origURL, err := ioutil.ReadAll(r.Body)
 			if err != nil {
@@ -86,14 +86,14 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			}
 			shortKey := GenerateShortKey()
 			storage.StoreURL(shortKey, string(origURL))
-			shortenedUrl := fmt.Sprintf("%s/%s", config.Options.BaseURL, shortKey)
+			shortenedURL := fmt.Sprintf("%s/%s", config.Options.BaseURL, shortKey)
 			// Return url
 			w.Header().Set("Content-Type", "text/plain")
-			w.Header().Set("Content-Length", strconv.Itoa(len(shortenedUrl)))
+			w.Header().Set("Content-Length", strconv.Itoa(len(shortenedURL)))
 			// 201
 			w.WriteHeader(http.StatusCreated)
 			//
-			fmt.Fprintf(w, shortenedUrl)
+			fmt.Fprintf(w, shortenedURL)
 		}
 	}
 }
