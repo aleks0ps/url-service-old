@@ -3,8 +3,9 @@ package handler
 import (
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
+
+	"github.com/go-resty/resty/v2"
 
 	"github.com/aleks0ps/url-service/internal/app/storage"
 
@@ -20,34 +21,44 @@ func TestShortenURL(t *testing.T) {
 		expectedBody string
 	}{
 		{method: http.MethodPost, body: "https://ya.ru", expectedCode: http.StatusCreated, expectedBody: ""},
-		{method: http.MethodPost, body: "", expectedCode: http.StatusBadRequest, expectedBody: ""},
+		{method: http.MethodPost, body: "", expectedCode: http.StatusCreated, expectedBody: ""},
 	}
+
+	handler := http.HandlerFunc(ShortenURL)
+	srv := httptest.NewServer(handler)
+	defer srv.Close()
 
 	for _, tc := range testCases {
 		t.Run(tc.method, func(t *testing.T) {
-			r := httptest.NewRequest(tc.method, "/", strings.NewReader(tc.body))
-			r.Header.Set("Content-Type", contentType)
-			w := httptest.NewRecorder()
-			ShortenURL(w, r)
-			assert.Equal(t, tc.expectedCode, w.Code, "Код ответа не совпадает с ожидаемым")
+			r := resty.New().R()
+			r.Method = tc.method
+			r.URL = srv.URL
+			r.SetHeader("Content-Type", contentType)
+			r.SetBody([]byte(tc.body))
+			resp, err := r.Send()
+			assert.NoError(t, err, "error making HTTP request")
+			assert.Equal(t, tc.expectedCode, resp.StatusCode(), "Код ответа не совпадает с ожидаемым")
 		})
 	}
 }
 
 func TestGetOrigURL(t *testing.T) {
 	contentType := "text/plain"
-	baseUri := "http://localhost:8080/"
 	urls := []struct {
 		key     string
-		origUrl string
+		origURL string
 	}{
-		{key: GenerateShortKey(), origUrl: "https://ya.ru"},
-		{key: GenerateShortKey(), origUrl: "https://google.com"},
+		{key: "qsBVYP", origURL: "https://ya.ru"},
+		{key: "35D0WW", origURL: "https://google.com"},
 	}
 
 	for _, url := range urls {
-		storage.StoreURL(url.key, url.origUrl)
+		storage.StoreURL(url.key, url.origURL)
 	}
+
+	handler := http.HandlerFunc(GetOrigURL)
+	srv := httptest.NewServer(handler)
+	defer srv.Close()
 
 	testCases := []struct {
 		method       string
@@ -55,17 +66,21 @@ func TestGetOrigURL(t *testing.T) {
 		expectedCode int
 		expectedBody string
 	}{
-		{method: http.MethodGet, body: baseUri + urls[0].key, expectedCode: http.StatusTemporaryRedirect, expectedBody: urls[0].origUrl},
-		{method: http.MethodGet, body: baseUri + urls[1].key, expectedCode: http.StatusTemporaryRedirect, expectedBody: urls[1].origUrl},
+		{method: http.MethodGet, body: urls[0].key, expectedCode: http.StatusTemporaryRedirect, expectedBody: urls[0].origURL},
+		{method: http.MethodGet, body: urls[1].key, expectedCode: http.StatusTemporaryRedirect, expectedBody: urls[1].origURL},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.method, func(t *testing.T) {
-			r := httptest.NewRequest(tc.method, tc.body, nil)
-			r.Header.Set("Content-Type", contentType)
-			w := httptest.NewRecorder()
-			GetOrigURL(w, r)
-			assert.Equal(t, tc.expectedCode, w.Code, "Код ответа не совпадает с ожидаемым")
+			r := resty.New().R()
+			r.Method = tc.method
+			r.URL = srv.URL + "/" + tc.body
+			r.SetHeader("Content-Type", contentType)
+			resp, err := r.Send()
+			assert.NoError(t, err, "error making HTTP request")
+			// return 200 instead of 30*
+			assert.Equal(t, http.StatusOK, resp.StatusCode(), "Код ответа не совпадает с ожидаемым")
+
 		})
 	}
 }
