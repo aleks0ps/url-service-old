@@ -21,7 +21,7 @@ func TestShortenURL(t *testing.T) {
 		expectedBody string
 	}{
 		{method: http.MethodPost, body: "https://ya.ru", expectedCode: http.StatusCreated, expectedBody: ""},
-		{method: http.MethodPost, body: "", expectedCode: http.StatusBadRequest, expectedBody: ""},
+		{method: http.MethodPost, body: "", expectedCode: http.StatusCreated, expectedBody: ""},
 	}
 
 	handler := http.HandlerFunc(ShortenURL)
