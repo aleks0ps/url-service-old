@@ -18,7 +18,7 @@ type ContentType int
 const (
 	Unsupported ContentType = iota
 	PlainText
-	UrlEncoded
+	URLEncoded
 )
 
 type ContentTypes struct {
@@ -33,7 +33,7 @@ var supportedTypes = []ContentTypes{
 	},
 	{
 		name: "application/x-www-form-urlencoded",
-		code: UrlEncoded,
+		code: URLEncoded,
 	},
 }
 
@@ -62,7 +62,7 @@ func GenerateShortKey() string {
 func ShortenURL(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		contentType := r.Header.Get("Content-Type")
-		if checkContentType(contentType) == UrlEncoded {
+		if checkContentType(contentType) == URLEncoded {
 			r.ParseForm()
 			origURL := strings.Join(r.PostForm["url"], "")
 			// XXX
