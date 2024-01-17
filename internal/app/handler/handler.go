@@ -64,13 +64,13 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 		contentType := r.Header.Get("Content-Type")
 		if checkContentType(contentType) == UrlEncoded {
 			r.ParseForm()
-			origUrl := strings.Join(r.PostForm["url"], "")
+			origURL := strings.Join(r.PostForm["url"], "")
 			// XXX
-			if len(origUrl) == 0 {
+			if len(origURL) == 0 {
 				w.WriteHeader(http.StatusBadRequest)
 			}
 			shortKey := GenerateShortKey()
-			storage.StoreURL(shortKey, string(origUrl))
+			storage.StoreURL(shortKey, string(origURL))
 			shortenedUrl := fmt.Sprintf("%s/%s", config.Options.BaseURL, shortKey)
 			// Return url
 			w.Header().Set("Content-Type", "text/plain")
@@ -80,12 +80,12 @@ func ShortenURL(w http.ResponseWriter, r *http.Request) {
 			//
 			fmt.Fprintf(w, shortenedUrl)
 		} else {
-			origUrl, err := ioutil.ReadAll(r.Body)
+			origURL, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				panic(err)
 			}
 			shortKey := GenerateShortKey()
-			storage.StoreURL(shortKey, string(origUrl))
+			storage.StoreURL(shortKey, string(origURL))
 			shortenedUrl := fmt.Sprintf("%s/%s", config.Options.BaseURL, shortKey)
 			// Return url
 			w.Header().Set("Content-Type", "text/plain")
@@ -104,9 +104,9 @@ func GetOrigURL(w http.ResponseWriter, r *http.Request) {
 		if r.URL.RequestURI() == "/favicon.ico" {
 		} else {
 			shortKey := r.URL.RequestURI()[1:]
-			origUrl, ok := storage.GetOrigURL(shortKey)
+			origURL, ok := storage.GetOrigURL(shortKey)
 			if ok {
-				http.Redirect(w, r, origUrl, http.StatusTemporaryRedirect)
+				http.Redirect(w, r, origURL, http.StatusTemporaryRedirect)
 			} else {
 				w.WriteHeader(http.StatusBadRequest)
 			}

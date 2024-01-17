@@ -46,14 +46,14 @@ func TestGetOrigURL(t *testing.T) {
 	contentType := "text/plain"
 	urls := []struct {
 		key     string
-		origUrl string
+		origURL string
 	}{
-		{key: "qsBVYP", origUrl: "https://ya.ru"},
-		{key: "35D0WW", origUrl: "https://google.com"},
+		{key: "qsBVYP", origURL: "https://ya.ru"},
+		{key: "35D0WW", origURL: "https://google.com"},
 	}
 
 	for _, url := range urls {
-		storage.StoreURL(url.key, url.origUrl)
+		storage.StoreURL(url.key, url.origURL)
 	}
 
 	handler := http.HandlerFunc(GetOrigURL)
@@ -66,8 +66,8 @@ func TestGetOrigURL(t *testing.T) {
 		expectedCode int
 		expectedBody string
 	}{
-		{method: http.MethodGet, body: urls[0].key, expectedCode: http.StatusTemporaryRedirect, expectedBody: urls[0].origUrl},
-		{method: http.MethodGet, body: urls[1].key, expectedCode: http.StatusTemporaryRedirect, expectedBody: urls[1].origUrl},
+		{method: http.MethodGet, body: urls[0].key, expectedCode: http.StatusTemporaryRedirect, expectedBody: urls[0].origURL},
+		{method: http.MethodGet, body: urls[1].key, expectedCode: http.StatusTemporaryRedirect, expectedBody: urls[1].origURL},
 	}
 
 	for _, tc := range testCases {
